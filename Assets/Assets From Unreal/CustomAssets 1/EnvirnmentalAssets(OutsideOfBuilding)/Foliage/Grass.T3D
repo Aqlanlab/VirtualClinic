@@ -1,0 +1,3 @@
+Begin Object Class=/Script/Landscape.LandscapeGrassType Name="Grass"
+   GrassVarieties(0)=(GrassMesh=StaticMesh'"/Game/PN_GrassLibrary/Meshes/grassMesh/grass_01_01_mesh.grass_01_01_mesh"',GrassDensity=(Default=1000.000000),StartCullDistance=(Default=6000),ScaleX=(Min=0.800000,Max=1.200000),bCastDynamicShadow=False)
+End Object

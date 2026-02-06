@@ -1,0 +1,4 @@
+Begin Object Class=/Script/Engine.Skeleton Name="stool_falling_Anim_Skeleton"
+   BoneTree(0)=()
+   PreviewSkeletalMesh=/Game/CustomAssets/stool_falling_Anim.stool_falling_Anim
+End Object

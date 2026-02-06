@@ -1,0 +1,4 @@
+Begin Object Class=/Script/Engine.Skeleton Name="Front_Desk_Model_Animation_Skeleton"
+   BoneTree(162)=()
+   PreviewSkeletalMesh=/Game/CustomAssets/Models/Front_Desk_Model/Front_Desk_Model.Front_Desk_Model
+End Object
