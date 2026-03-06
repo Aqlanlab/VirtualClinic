@@ -1,195 +1,95 @@
-﻿// lobbyMenu.cs
-// No extra plugins: uses built-in Unity UI (Canvas/Button/Text) + EventSystem.
-// Attach to an empty GameObject in your scene. Press Play to auto-build the menu.
-
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
+﻿using UnityEngine;
 
 public class lobbyMenu : MonoBehaviour
 {
-    [Header("World Space")]
-    public bool worldSpace = true;
-    public Vector2 canvasSize = new Vector2(1600, 1000);
-    [Tooltip("0.001 means 1000px = ~1 meter in world space.")]
-    public float worldScale = 0.001f;
+    [Header("Options")]
+    public string[] rooms = { "Lab", "Warehouse", "Office" };
+    public int[] playerCounts = { 2, 3, 4, 5, 6 };
+    public string[] occupations = { "Engineer", "Medic", "Security" };
 
-    [Tooltip("If set, menu will face this target (usually Main Camera).")]
-    public Transform faceTarget;
-    public Vector3 worldPosition = new Vector3(0f, 1.5f, 2f);
+    [Header("Layout")]
+    public float x = 10f;
+    public float y = 10f;
+    public float rowHeight = 45f;
+    public float labelWidth = 160f;
+    public float arrowWidth = 40f;
+    public float valueWidth = 220f;
 
-    [Header("Buttons")]
-    public Vector2 buttonSize = new Vector2(1200, 140);
-    public float buttonSpacing = 40f;
-    [Range(0f, 1f)] public float backgroundAlpha = 0.20f; // subtle fill
-    [Range(0f, 1f)] public float borderAlpha = 0.95f;     // white border
-    [Range(0f, 1f)] public float textAlpha = 0.95f;
+    public int RoomIndex { get; private set; }
+    public int PlayerCountIndex { get; private set; }
+    public int OccupationIndex { get; private set; }
 
-    public int fontSize = 48;
+    public string SelectedRoom => (rooms != null && rooms.Length > 0) ? rooms[RoomIndex] : "";
+    public int SelectedPlayers => (playerCounts != null && playerCounts.Length > 0) ? playerCounts[PlayerCountIndex] : 0;
+    public string SelectedOccupation => (occupations != null && occupations.Length > 0) ? occupations[OccupationIndex] : "";
 
-    private GameObject _root;
-
-    private void Start()
+    void OnGUI()
     {
-        EnsureEventSystem();
-        BuildMenu();
-        PositionMenu();
+        // Guard against empty arrays
+        if (rooms == null || rooms.Length == 0) rooms = new[] { "Room 1" };
+        if (playerCounts == null || playerCounts.Length == 0) playerCounts = new[] { 2 };
+        if (occupations == null || occupations.Length == 0) occupations = new[] { "Occupation" };
+
+        RoomIndex = Mathf.Clamp(RoomIndex, 0, rooms.Length - 1);
+        PlayerCountIndex = Mathf.Clamp(PlayerCountIndex, 0, playerCounts.Length - 1);
+        OccupationIndex = Mathf.Clamp(OccupationIndex, 0, occupations.Length - 1);
+
+        float yy = y;
+
+        RoomIndex = DrawArrowSelector(
+            new Rect(x, yy, labelWidth + arrowWidth + valueWidth + arrowWidth, rowHeight),
+            "Select Room",
+            rooms,
+            RoomIndex
+        );
+        yy += rowHeight + 10f;
+
+        // Convert int[] to string labels for display
+        string[] playerLabels = new string[playerCounts.Length];
+        for (int i = 0; i < playerCounts.Length; i++) playerLabels[i] = playerCounts[i].ToString();
+
+        PlayerCountIndex = DrawArrowSelector(
+            new Rect(x, yy, labelWidth + arrowWidth + valueWidth + arrowWidth, rowHeight),
+            "Number of Players",
+            playerLabels,
+            PlayerCountIndex
+        );
+        yy += rowHeight + 10f;
+
+        OccupationIndex = DrawArrowSelector(
+            new Rect(x, yy, labelWidth + arrowWidth + valueWidth + arrowWidth, rowHeight),
+            "Occupation",
+            occupations,
+            OccupationIndex
+        );
     }
 
-    private void LateUpdate()
+    int DrawArrowSelector(Rect rowRect, string label, string[] options, int index)
     {
-        // Keep facing camera (yaw only)
-        if (worldSpace)
-        {
-            if (faceTarget == null && Camera.main != null) faceTarget = Camera.main.transform;
-            if (faceTarget != null && _root != null)
-            {
-                Vector3 dir = faceTarget.position - _root.transform.position;
-                dir.y = 0f;
-                if (dir.sqrMagnitude > 0.0001f)
-                    _root.transform.rotation = Quaternion.LookRotation(-dir.normalized, Vector3.up);
-            }
-        }
+        // Label
+        GUI.Label(new Rect(rowRect.x, rowRect.y + 12f, labelWidth, rowRect.height), label);
+
+        // Left arrow
+        if (GUI.Button(new Rect(rowRect.x + labelWidth, rowRect.y, arrowWidth, rowRect.height), "<"))
+            index = Wrap(index - 1, options.Length);
+
+        // Value (clicking it also advances, optional)
+        string value = options[index];
+        if (GUI.Button(new Rect(rowRect.x + labelWidth + arrowWidth, rowRect.y, valueWidth, rowRect.height), value))
+            index = Wrap(index + 1, options.Length);
+
+        // Right arrow
+        if (GUI.Button(new Rect(rowRect.x + labelWidth + arrowWidth + valueWidth, rowRect.y, arrowWidth, rowRect.height), ">"))
+            index = Wrap(index + 1, options.Length);
+
+        return index;
     }
 
-    private void BuildMenu()
+    int Wrap(int i, int len)
     {
-        // Clear previous build (if any)
-        if (_root != null)
-        {
-            Destroy(_root);
-        }
-
-        _root = new GameObject("LobbyMenuCanvas", typeof(RectTransform));
-        _root.transform.SetParent(transform, false);
-
-        var canvas = _root.AddComponent<Canvas>();
-        canvas.renderMode = worldSpace ? RenderMode.WorldSpace : RenderMode.ScreenSpaceOverlay;
-
-        _root.AddComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
-        _root.AddComponent<GraphicRaycaster>();
-
-        var canvasRT = _root.GetComponent<RectTransform>();
-        canvasRT.sizeDelta = canvasSize;
-        canvasRT.localScale = Vector3.one * (worldSpace ? worldScale : 1f);
-
-        // Container with vertical layout
-        var container = new GameObject("MenuContainer", typeof(RectTransform));
-        container.transform.SetParent(_root.transform, false);
-
-        var containerRT = container.GetComponent<RectTransform>();
-        containerRT.anchorMin = new Vector2(0.5f, 0.5f);
-        containerRT.anchorMax = new Vector2(0.5f, 0.5f);
-        containerRT.pivot = new Vector2(0.5f, 0.5f);
-        containerRT.anchoredPosition = Vector2.zero;
-
-        var vlg = container.AddComponent<VerticalLayoutGroup>();
-        vlg.childAlignment = TextAnchor.MiddleCenter;
-        vlg.spacing = buttonSpacing;
-        vlg.childControlWidth = false;
-        vlg.childControlHeight = false;
-        vlg.childForceExpandWidth = false;
-        vlg.childForceExpandHeight = false;
-
-        var fitter = container.AddComponent<ContentSizeFitter>();
-        fitter.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-
-        // Buttons
-        CreateButton(container.transform, "Create Lobby", OnCreateLobby);
-        CreateButton(container.transform, "Join Lobby", OnJoinLobby);
-        CreateButton(container.transform, "Options", OnOptions);
-        CreateButton(container.transform, "Quit", OnQuit);
-    }
-
-    private void PositionMenu()
-    {
-        if (_root == null) return;
-
-        if (worldSpace)
-        {
-            _root.transform.position = worldPosition;
-
-            // Default face target
-            if (faceTarget == null && Camera.main != null)
-                faceTarget = Camera.main.transform;
-        }
-    }
-
-    private void CreateButton(Transform parent, string label, UnityEngine.Events.UnityAction onClick)
-    {
-        var go = new GameObject($"Btn_{label.Replace(" ", "")}", typeof(RectTransform));
-        go.transform.SetParent(parent, false);
-
-        var rt = go.GetComponent<RectTransform>();
-        rt.sizeDelta = buttonSize;
-
-        // Background
-        var bg = go.AddComponent<Image>();
-        bg.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
-        bg.type = Image.Type.Sliced;
-        bg.color = new Color(0f, 0f, 0f, backgroundAlpha);
-
-        var btn = go.AddComponent<Button>();
-        btn.targetGraphic = bg;
-        btn.onClick.AddListener(onClick);
-
-        var le = go.AddComponent<LayoutElement>();
-        le.preferredWidth = buttonSize.x;
-        le.preferredHeight = buttonSize.y;
-
-        // Border (outline only)
-        var borderGO = new GameObject("Border", typeof(RectTransform));
-        borderGO.transform.SetParent(go.transform, false);
-
-        var borderRT = borderGO.GetComponent<RectTransform>();
-        borderRT.anchorMin = Vector2.zero;
-        borderRT.anchorMax = Vector2.one;
-        borderRT.offsetMin = Vector2.zero;
-        borderRT.offsetMax = Vector2.zero;
-
-        var border = borderGO.AddComponent<Image>();
-        border.sprite = Resources.GetBuiltinResource<Sprite>("UI/Skin/UISprite.psd");
-        border.type = Image.Type.Sliced;
-        border.fillCenter = false;         // important: border only
-        border.raycastTarget = false;
-        border.color = new Color(1f, 1f, 1f, borderAlpha);
-
-        // Text
-        var textGO = new GameObject("Text", typeof(RectTransform));
-        textGO.transform.SetParent(go.transform, false);
-
-        var textRT = textGO.GetComponent<RectTransform>();
-        textRT.anchorMin = Vector2.zero;
-        textRT.anchorMax = Vector2.one;
-        textRT.offsetMin = Vector2.zero;
-        textRT.offsetMax = Vector2.zero;
-
-        var txt = textGO.AddComponent<Text>();
-        txt.text = label;
-        txt.alignment = TextAnchor.MiddleCenter;
-        txt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        txt.fontSize = fontSize;
-        txt.color = new Color(1f, 1f, 1f, textAlpha);
-        txt.raycastTarget = false;
-    }
-
-    private static void EnsureEventSystem()
-    {
-        if (FindFirstObjectByType<EventSystem>() != null) return;
-
-        var es = new GameObject("EventSystem");
-        es.AddComponent<EventSystem>();
-        es.AddComponent<StandaloneInputModule>();
-    }
-
-    // --- Button actions (replace with your real logic) ---
-    private void OnCreateLobby() => Debug.Log("Create Lobby clicked");
-    private void OnJoinLobby() => Debug.Log("Join Lobby clicked");
-    private void OnOptions() => Debug.Log("Options clicked");
-    private void OnQuit()
-    {
-        Debug.Log("Quit clicked");
-        Application.Quit();
+        if (len <= 0) return 0;
+        i %= len;
+        if (i < 0) i += len;
+        return i;
     }
 }
