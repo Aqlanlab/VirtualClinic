@@ -1,25 +1,35 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
+using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-
-using Unity.Services.Core;
+using Unity.Networking.Transport.Relay;
 using Unity.Services.Authentication;
-
-using Unity.Services.Relay;
-using Unity.Services.Relay.Models;
-
-// Lobby
+using Unity.Services.Core;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
+using Unity.Services.Relay;
+using Unity.Services.Relay.Models;
+using UnityEngine;
+using UnityEngine.UI;
 
-// Needed for RelayServerData type used by UnityTransport
-using Unity.Networking.Transport.Relay;
-//
 public class RelayNetworkStartupUI : MonoBehaviour
 {
+    [Header("UI References")]
+    public Button hostButton;
+    public Button refreshButton;
+    public Button joinSelectedButton;
+    public Button joinByCodeButton;
+    public Button prevLobbyButton;
+    public Button nextLobbyButton;
+
+    public TMP_Text selectedLobbyText;
+    public TMP_Text statusText;
+    public TMP_Text joinCodeCreatedText;
+
+    public TMP_InputField joinCodeInputField;
+
     [Header("Relay Settings")]
     [Tooltip("Number of CLIENT connections allowed (host not counted). Example: 3 means host + 3 clients = 4 players.")]
     public int maxClientConnections = 3;
@@ -38,133 +48,92 @@ public class RelayNetworkStartupUI : MonoBehaviour
     public float lobbyHeartbeatSeconds = 15f;
 
     private string joinCodeCreated = "";
-    private string joinCodeInput = "";
-
     private bool busy;
     private string status = "";
 
-    // Lobby state
     private Lobby hostLobby;
     private Coroutine heartbeatRoutine;
 
     private List<Lobby> lobbyList = new List<Lobby>();
     private int selectedLobbyIndex = -1;
 
+    private static bool ugsReady;
+    private static System.Threading.Tasks.Task initTask;
+
     private async void Awake()
+{
+    if (hostButton != null) hostButton.onClick.AddListener(StartHostWithRelayAndLobbyClicked);
+    if (refreshButton != null) refreshButton.onClick.AddListener(RefreshLobbiesClicked);
+    if (joinSelectedButton != null) joinSelectedButton.onClick.AddListener(JoinSelectedLobbyClicked);
+    if (joinByCodeButton != null) joinByCodeButton.onClick.AddListener(StartClientWithRelayClicked);
+    if (prevLobbyButton != null) prevLobbyButton.onClick.AddListener(SelectPreviousLobby);
+    if (nextLobbyButton != null) nextLobbyButton.onClick.AddListener(SelectNextLobby);
+
+    try
     {
-        // Optional: initialize early so UI is snappy
         await EnsureUGSReady();
     }
-
-    void OnGUI()
+    catch (Exception e)
     {
-        var nm = NetworkManager.Singleton;
-        if (nm == null) return;
-
-        // Once started, don't draw the startup UI
-        if (nm.IsClient || nm.IsServer) return;
-
-        float w = 320f, h = 40f;
-        float x = 10f, y = 10f;
-
-        GUI.Label(new Rect(x, y, 800f, 25f), "Relay + Lobby (No typing join code needed)");
-        y += 30f;
-
-        GUI.enabled = !busy;
-
-        // HOST
-        if (GUI.Button(new Rect(x, y, w, h), "Host (Create Relay + Create Lobby + StartHost)"))
-            StartHostWithRelayAndLobbyClicked();
-        y += h + 10f;
-
-        // LOBBY DISCOVERY
-        if (GUI.Button(new Rect(x, y, w, h), "Refresh Lobby List"))
-            RefreshLobbiesClicked();
-        y += h + 10f;
-
-        DrawLobbySelector(x, y, w, h, out float usedHeight);
-        y += usedHeight + 10f;
-
-        if (GUI.Button(new Rect(x, y, w, h), "Join Selected Lobby"))
-            JoinSelectedLobbyClicked();
-        y += h + 10f;
-
-        // Manual join code (fallback)
-        GUI.Label(new Rect(x, y, 500f, 25f), "Or join by code (manual):");
-        y += 25f;
-
-        joinCodeInput = GUI.TextField(new Rect(x, y, w, h), joinCodeInput);
-        y += h + 10f;
-
-        if (GUI.Button(new Rect(x, y, w, h), "Client (Join Relay + StartClient)"))
-            StartClientWithRelayClicked();
-        y += h + 10f;
-
-        GUI.enabled = true;
-
-        if (!string.IsNullOrEmpty(joinCodeCreated))
-        {
-            GUI.Label(new Rect(x, y, 900f, 25f), $"Host Join Code: {joinCodeCreated}");
-            y += 25f;
-        }
-
-        if (!string.IsNullOrEmpty(status))
-            GUI.Label(new Rect(x, y, 900f, 60f), status);
+        Debug.LogException(e);
+        status = $"UGS init failed: {e.Message}";
     }
 
-    private void DrawLobbySelector(float x, float y, float w, float h, out float usedHeight)
+    RefreshVisuals();
+}
+
+    private void RefreshVisuals()
     {
-        usedHeight = 0f;
+        if (hostButton != null) hostButton.interactable = !busy;
+        if (refreshButton != null) refreshButton.interactable = !busy;
+        if (joinSelectedButton != null) joinSelectedButton.interactable = !busy;
+        if (joinByCodeButton != null) joinByCodeButton.interactable = !busy;
+        if (prevLobbyButton != null) prevLobbyButton.interactable = !busy && lobbyList != null && lobbyList.Count > 0;
+        if (nextLobbyButton != null) nextLobbyButton.interactable = !busy && lobbyList != null && lobbyList.Count > 0;
+        if (joinCodeInputField != null) joinCodeInputField.interactable = !busy;
 
-        GUI.Label(new Rect(x, y, 500f, 25f), "Select Lobby:");
-        y += 25f;
-        usedHeight += 25f;
+        if (statusText != null)
+            statusText.text = status;
 
-        if (lobbyList == null || lobbyList.Count == 0)
+        if (joinCodeCreatedText != null)
         {
-            GUI.Label(new Rect(x, y, 900f, 25f), "(No lobbies found. Click Refresh.)");
-            y += 25f;
-            usedHeight += 25f;
-            return;
+            joinCodeCreatedText.text = string.IsNullOrEmpty(joinCodeCreated)
+                ? ""
+                : $"Host Join Code: {joinCodeCreated}";
         }
 
-        if (selectedLobbyIndex < 0 || selectedLobbyIndex >= lobbyList.Count)
-            selectedLobbyIndex = 0;
-
-        // Arrow selector: <  [LobbyName (players/max)]  >
-        float arrowW = 40f;
-        float valueW = w - arrowW - arrowW;
-
-        if (GUI.Button(new Rect(x, y, arrowW, h), "<"))
-            selectedLobbyIndex = Wrap(selectedLobbyIndex - 1, lobbyList.Count);
-
-        var l = lobbyList[selectedLobbyIndex];
-        string label = $"{l.Name} ({l.Players.Count}/{l.MaxPlayers})";
-        GUI.Box(new Rect(x + arrowW, y, valueW, h), label);
-
-        if (GUI.Button(new Rect(x + arrowW + valueW, y, arrowW, h), ">"))
-            selectedLobbyIndex = Wrap(selectedLobbyIndex + 1, lobbyList.Count);
-
-        y += h;
-        usedHeight += h;
+        if (selectedLobbyText != null)
+        {
+            if (lobbyList == null || lobbyList.Count == 0 || selectedLobbyIndex < 0 || selectedLobbyIndex >= lobbyList.Count)
+            {
+                selectedLobbyText.text = "(No lobbies found)";
+            }
+            else
+            {
+                var l = lobbyList[selectedLobbyIndex];
+                int currentPlayers = l.Players != null ? l.Players.Count : 0;
+                selectedLobbyText.text = $"{l.Name} ({currentPlayers}/{l.MaxPlayers})";
+            }
+        }
     }
+
 
     private async void StartHostWithRelayAndLobbyClicked()
     {
         busy = true;
         status = "Creating Relay allocation...";
         joinCodeCreated = "";
+        RefreshVisuals();
 
         try
         {
             await EnsureUGSReady();
 
-            // Create allocation for N clients (host not counted)
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxClientConnections);
 
-            // Apply relay settings to UnityTransport
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-            if (transport == null) throw new Exception("UnityTransport not found on NetworkManager.");
+            if (transport == null)
+                throw new Exception("UnityTransport not found on NetworkManager.");
 
             transport.SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
             transport.UseWebSockets = connectionType.Equals("wss", StringComparison.OrdinalIgnoreCase);
@@ -173,8 +142,8 @@ public class RelayNetworkStartupUI : MonoBehaviour
             Debug.Log("Relay Join Code: " + joinCodeCreated);
 
             status = "Creating Lobby (publishing join code)...";
+            RefreshVisuals();
 
-            // Lobby max players includes host
             int maxPlayersTotal = maxClientConnections + 1;
 
             hostLobby = await LobbyService.Instance.CreateLobbyAsync(
@@ -185,22 +154,26 @@ public class RelayNetworkStartupUI : MonoBehaviour
                     IsPrivate = lobbyPrivate,
                     Data = new Dictionary<string, DataObject>
                     {
-                        // Public so clients can see it in query results
                         { "relayJoinCode", new DataObject(DataObject.VisibilityOptions.Public, joinCodeCreated) }
                     }
                 }
             );
 
-            // Keep lobby active/visible
-            if (heartbeatRoutine != null) StopCoroutine(heartbeatRoutine);
+            if (heartbeatRoutine != null)
+                StopCoroutine(heartbeatRoutine);
+
             heartbeatRoutine = StartCoroutine(HeartbeatLobby(hostLobby.Id, lobbyHeartbeatSeconds));
 
             status = "Starting Host...";
+            RefreshVisuals();
+
             bool ok = NetworkManager.Singleton.StartHost();
 
             if (!ok)
             {
                 status = "StartHost() failed. Cleaning up lobby...";
+                RefreshVisuals();
+
                 await SafeDeleteHostLobby();
                 status = "StartHost() failed.";
             }
@@ -220,6 +193,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
         finally
         {
             busy = false;
+            RefreshVisuals();
         }
     }
 
@@ -227,25 +201,30 @@ public class RelayNetworkStartupUI : MonoBehaviour
     {
         busy = true;
         status = "Joining Relay allocation...";
+        RefreshVisuals();
 
         try
         {
             await EnsureUGSReady();
 
+            string joinCodeInput = joinCodeInputField != null ? joinCodeInputField.text.Trim() : "";
+
             if (string.IsNullOrWhiteSpace(joinCodeInput))
                 throw new Exception("Enter a join code first.");
 
-            JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCodeInput.Trim());
+            JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCodeInput);
 
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-            if (transport == null) throw new Exception("UnityTransport not found on NetworkManager.");
+            if (transport == null)
+                throw new Exception("UnityTransport not found on NetworkManager.");
 
             transport.SetRelayServerData(AllocationUtils.ToRelayServerData(joinAllocation, connectionType));
             transport.UseWebSockets = connectionType.Equals("wss", StringComparison.OrdinalIgnoreCase);
 
             status = "Starting Client...";
-            bool ok = NetworkManager.Singleton.StartClient();
+            RefreshVisuals();
 
+            bool ok = NetworkManager.Singleton.StartClient();
             status = ok ? "Client started (connecting...)" : "StartClient() failed.";
         }
         catch (Exception e)
@@ -256,6 +235,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
         finally
         {
             busy = false;
+            RefreshVisuals();
         }
     }
 
@@ -263,6 +243,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
     {
         busy = true;
         status = "Querying lobbies...";
+        RefreshVisuals();
 
         try
         {
@@ -271,7 +252,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
             QueryResponse qr = await LobbyService.Instance.QueryLobbiesAsync();
             lobbyList = qr.Results ?? new List<Lobby>();
 
-            selectedLobbyIndex = (lobbyList.Count > 0) ? 0 : -1;
+            selectedLobbyIndex = lobbyList.Count > 0 ? 0 : -1;
             status = $"Found {lobbyList.Count} lobbies.";
         }
         catch (Exception e)
@@ -282,6 +263,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
         finally
         {
             busy = false;
+            RefreshVisuals();
         }
     }
 
@@ -290,6 +272,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
         if (lobbyList == null || lobbyList.Count == 0 || selectedLobbyIndex < 0 || selectedLobbyIndex >= lobbyList.Count)
         {
             status = "No lobby selected. Click Refresh first.";
+            RefreshVisuals();
             return;
         }
 
@@ -297,20 +280,39 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
         if (l.Data != null && l.Data.TryGetValue("relayJoinCode", out var codeObj))
         {
-            joinCodeInput = codeObj.Value;
-            StartClientWithRelayClicked(); // reuse existing relay join flow
+            if (joinCodeInputField != null)
+                joinCodeInputField.text = codeObj.Value;
+
+            StartClientWithRelayClicked();
         }
         else
         {
             status = "Selected lobby is missing relayJoinCode.";
+            RefreshVisuals();
         }
+    }
+
+    public void SelectPreviousLobby()
+    {
+        if (lobbyList == null || lobbyList.Count == 0) return;
+        selectedLobbyIndex = Wrap(selectedLobbyIndex - 1, lobbyList.Count);
+        RefreshVisuals();
+    }
+
+    public void SelectNextLobby()
+    {
+        if (lobbyList == null || lobbyList.Count == 0) return;
+        selectedLobbyIndex = Wrap(selectedLobbyIndex + 1, lobbyList.Count);
+        RefreshVisuals();
     }
 
     private IEnumerator HeartbeatLobby(string lobbyId, float intervalSeconds)
     {
-        if (intervalSeconds <= 0f) intervalSeconds = 15f;
+        if (intervalSeconds <= 0f)
+            intervalSeconds = 15f;
 
         var wait = new WaitForSecondsRealtime(intervalSeconds);
+
         while (true)
         {
             _ = LobbyService.Instance.SendHeartbeatPingAsync(lobbyId);
@@ -328,30 +330,51 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
         if (hostLobby != null)
         {
-            try { await LobbyService.Instance.DeleteLobbyAsync(hostLobby.Id); }
-            catch { /* ignore */ }
+            try
+            {
+                await LobbyService.Instance.DeleteLobbyAsync(hostLobby.Id);
+            }
+            catch
+            {
+            }
+
             hostLobby = null;
         }
     }
 
     private void OnDestroy()
     {
-        // Best-effort cleanup when leaving play mode / destroying object
         _ = SafeDeleteHostLobby();
     }
 
-    private static bool ugsReady;
-
-    private static async System.Threading.Tasks.Task EnsureUGSReady()
+    private static System.Threading.Tasks.Task EnsureUGSReady()
     {
-        if (ugsReady) return;
+        if (ugsReady)
+            return System.Threading.Tasks.Task.CompletedTask;
 
-        await UnityServices.InitializeAsync();
+        if (initTask != null)
+            return initTask;
 
-        if (!AuthenticationService.Instance.IsSignedIn)
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+        initTask = EnsureUGSReadyInternal();
+        return initTask;
+    }
 
-        ugsReady = true;
+    private static async System.Threading.Tasks.Task EnsureUGSReadyInternal()
+    {
+        try
+        {
+            await UnityServices.InitializeAsync();
+
+            if (!AuthenticationService.Instance.IsSignedIn && !AuthenticationService.Instance.IsAuthorized)
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+
+            ugsReady = true;
+        }
+        finally
+        {
+            if (!ugsReady)
+                initTask = null;
+        }
     }
 
     private static int Wrap(int i, int len)
