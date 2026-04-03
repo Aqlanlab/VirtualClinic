@@ -28,6 +28,8 @@ public class IKTargetFollowVRRig : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
+        if(head == null || leftHand== null || rightHand == null)
+            return;
         transform.position = head.ikTarget.position + headBodyPositionOffset;
         float yaw = head.vrTarget.eulerAngles.y;
         transform.rotation = Quaternion.Lerp(transform.rotation,Quaternion.Euler(transform.eulerAngles.x, yaw, transform.eulerAngles.z),turnSmoothness);

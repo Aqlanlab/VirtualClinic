@@ -13,6 +13,7 @@ using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 using UnityEngine.UI;
+using Unity.Services.Vivox;
 
 public class RelayNetworkStartupUI : MonoBehaviour
 {
@@ -59,6 +60,9 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
     private static bool ugsReady;
     private static System.Threading.Tasks.Task initTask;
+
+    private static bool vivoxReady;
+    private Lobby joinedLobby;   // for clients
 
     private async void Awake()
 {
@@ -179,6 +183,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
             }
             else
             {
+                await VivoxService.Instance.JoinGroupChannelAsync(hostLobby.Id, ChatCapability.AudioOnly);
                 status = lobbyPrivate
                     ? $"Host started. Lobby is PRIVATE. Share join code: {joinCodeCreated}"
                     : $"Host started. Lobby is PUBLIC. Clients can select it from the list.";
@@ -225,7 +230,16 @@ public class RelayNetworkStartupUI : MonoBehaviour
             RefreshVisuals();
 
             bool ok = NetworkManager.Singleton.StartClient();
-            status = ok ? "Client started (connecting...)" : "StartClient() failed.";
+
+            if (ok && joinedLobby != null)
+            {
+                await VivoxService.Instance.JoinGroupChannelAsync(joinedLobby.Id, ChatCapability.AudioOnly);
+                status = "Client started and joined voice.";
+            }
+            else
+            {
+                status = ok ? "Client started, but no joined lobby was available for Vivox." : "StartClient() failed.";
+            }
         }
         catch (Exception e)
         {
@@ -267,7 +281,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
         }
     }
 
-    private void JoinSelectedLobbyClicked()
+    private async void JoinSelectedLobbyClicked()
     {
         if (lobbyList == null || lobbyList.Count == 0 || selectedLobbyIndex < 0 || selectedLobbyIndex >= lobbyList.Count)
         {
@@ -276,18 +290,29 @@ public class RelayNetworkStartupUI : MonoBehaviour
             return;
         }
 
-        var l = lobbyList[selectedLobbyIndex];
-
-        if (l.Data != null && l.Data.TryGetValue("relayJoinCode", out var codeObj))
+        try
         {
-            if (joinCodeInputField != null)
-                joinCodeInputField.text = codeObj.Value;
+            await EnsureUGSReady();
 
-            StartClientWithRelayClicked();
+            joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(lobbyList[selectedLobbyIndex].Id);
+
+            if (joinedLobby.Data != null && joinedLobby.Data.TryGetValue("relayJoinCode", out var codeObj))
+            {
+                if (joinCodeInputField != null)
+                    joinCodeInputField.text = codeObj.Value;
+
+                StartClientWithRelayClicked();
+            }
+            else
+            {
+                status = "Joined lobby, but relayJoinCode is missing.";
+                RefreshVisuals();
+            }
         }
-        else
+        catch (Exception e)
         {
-            status = "Selected lobby is missing relayJoinCode.";
+            status = $"Lobby join failed: {e.Message}";
+            Debug.LogException(e);
             RefreshVisuals();
         }
     }
@@ -332,13 +357,28 @@ public class RelayNetworkStartupUI : MonoBehaviour
         {
             try
             {
+                await VivoxService.Instance.LeaveChannelAsync(hostLobby.Id);
+            }
+            catch { }
+
+            try
+            {
                 await LobbyService.Instance.DeleteLobbyAsync(hostLobby.Id);
             }
-            catch
-            {
-            }
+            catch { }
 
             hostLobby = null;
+        }
+
+        if (joinedLobby != null)
+        {
+            try
+            {
+                await VivoxService.Instance.LeaveChannelAsync(joinedLobby.Id);
+            }
+            catch { }
+
+            joinedLobby = null;
         }
     }
 
@@ -367,6 +407,13 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
             if (!AuthenticationService.Instance.IsSignedIn && !AuthenticationService.Instance.IsAuthorized)
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
+
+            if (!vivoxReady)
+            {
+                await VivoxService.Instance.InitializeAsync();
+                await VivoxService.Instance.LoginAsync();
+                vivoxReady = true;
+            }
 
             ugsReady = true;
         }
