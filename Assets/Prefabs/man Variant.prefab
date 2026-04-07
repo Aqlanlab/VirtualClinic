@@ -76,6 +76,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
       insertIndex: -1
       addedObject: {fileID: -6271303434958758965}
+    - targetCorrespondingSourceObject: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4281740339649804674}
     - targetCorrespondingSourceObject: {fileID: 208872535862064029, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4003780022857985828}
@@ -358,6 +361,17 @@ MonoBehaviour:
   SwitchTransformSpaceWhenParented: 0
   Interpolate: 1
   SlerpPosition: 0
+--- !u!114 &7801229542091082624 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4925014916778174255, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 2889800328558898351}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8302418480673368590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6090b90752315704bb01ea222b438db1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
 --- !u!1 &8302418480673368590 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
@@ -377,3 +391,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   ShowTopMostFoldoutHeaderGroup: 1
   ikFollower: {fileID: 3717833929089338482}
+--- !u!114 &4281740339649804674
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8302418480673368590}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70782e516fabda142b8419765a90795c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  ShowTopMostFoldoutHeaderGroup: 1
+  xrRigRoot: {fileID: 0}
+  playerCamera: {fileID: 0}
+  playerAudioListener: {fileID: 0}
+  localOnlyScripts:
+  - {fileID: 3717833929089338482}
+  - {fileID: -6271303434958758965}
+  - {fileID: 7801229542091082624}
+  localOnlyObjects: []

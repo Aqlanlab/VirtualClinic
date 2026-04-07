@@ -62,6 +62,8 @@ public class RelayNetworkStartupUI : MonoBehaviour
     private static System.Threading.Tasks.Task initTask;
 
     private static bool vivoxReady;
+    private static System.Threading.Tasks.Task vivoxInitTask;
+
     private Lobby joinedLobby;   // for clients
 
     private async void Awake()
@@ -173,6 +175,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
             bool ok = NetworkManager.Singleton.StartHost();
 
+
             if (!ok)
             {
                 status = "StartHost() failed. Cleaning up lobby...";
@@ -183,7 +186,11 @@ public class RelayNetworkStartupUI : MonoBehaviour
             }
             else
             {
+                await EnsureUGSReady();
+                await EnsureVivoxReady();
                 await VivoxService.Instance.JoinGroupChannelAsync(hostLobby.Id, ChatCapability.AudioOnly);
+
+
                 status = lobbyPrivate
                     ? $"Host started. Lobby is PRIVATE. Share join code: {joinCodeCreated}"
                     : $"Host started. Lobby is PUBLIC. Clients can select it from the list.";
@@ -234,6 +241,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
             if (ok && joinedLobby != null)
             {
                 await VivoxService.Instance.JoinGroupChannelAsync(joinedLobby.Id, ChatCapability.AudioOnly);
+
                 status = "Client started and joined voice.";
             }
             else
@@ -358,6 +366,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
             try
             {
                 await VivoxService.Instance.LeaveChannelAsync(hostLobby.Id);
+
             }
             catch { }
 
@@ -374,7 +383,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
         {
             try
             {
-                await VivoxService.Instance.LeaveChannelAsync(joinedLobby.Id);
+                await VivoxService.Instance.LeaveChannelAsync(joinedLobby.Id);  
             }
             catch { }
 
@@ -399,21 +408,17 @@ public class RelayNetworkStartupUI : MonoBehaviour
         return initTask;
     }
 
+
     private static async System.Threading.Tasks.Task EnsureUGSReadyInternal()
     {
         try
         {
             await UnityServices.InitializeAsync();
+            Debug.Log("UGS initialized");
 
-            if (!AuthenticationService.Instance.IsSignedIn && !AuthenticationService.Instance.IsAuthorized)
+            if (!AuthenticationService.Instance.IsSignedIn)
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
-
-            if (!vivoxReady)
-            {
-                await VivoxService.Instance.InitializeAsync();
-                await VivoxService.Instance.LoginAsync();
-                vivoxReady = true;
-            }
+            Debug.Log("Auth signed in");
 
             ugsReady = true;
         }
@@ -430,5 +435,35 @@ public class RelayNetworkStartupUI : MonoBehaviour
         i %= len;
         if (i < 0) i += len;
         return i;
+    }
+    private static System.Threading.Tasks.Task EnsureVivoxReady()
+    {
+        if (vivoxReady)
+            return System.Threading.Tasks.Task.CompletedTask;
+
+        if (vivoxInitTask != null)
+            return vivoxInitTask;
+
+        vivoxInitTask = EnsureVivoxReadyInternal();
+        return vivoxInitTask;
+    }
+
+    private static async System.Threading.Tasks.Task EnsureVivoxReadyInternal()
+    {
+        try
+        {
+            await VivoxService.Instance.InitializeAsync();
+            Debug.Log("Vivox initialized");
+
+            await VivoxService.Instance.LoginAsync();
+            Debug.Log("Vivox logged in");
+
+            vivoxReady = true;
+        }
+        finally
+        {
+            if (!vivoxReady)
+                vivoxInitTask = null;
+        }
     }
 }
