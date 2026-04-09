@@ -134,15 +134,28 @@ public class RelayNetworkStartupUI : MonoBehaviour
         try
         {
             await EnsureUGSReady();
+            await EnsureVivoxReady();
+
+            if (VivoxService.Instance == null)
+                throw new Exception("VivoxService.Instance is null.");
+
+            if (!VivoxService.Instance.IsLoggedIn)
+                throw new Exception("Vivox is not logged in.");
 
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxClientConnections);
+
+            if (NetworkManager.Singleton == null)
+                throw new Exception("NetworkManager.Singleton is null. Make sure there is an active NetworkManager in the scene.");
 
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             if (transport == null)
                 throw new Exception("UnityTransport not found on NetworkManager.");
 
+            if (string.IsNullOrWhiteSpace(connectionType))
+                connectionType = "dtls";
+
             transport.SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
-            transport.UseWebSockets = connectionType.Equals("wss", StringComparison.OrdinalIgnoreCase);
+            transport.UseWebSockets = string.Equals(connectionType, "wss", StringComparison.OrdinalIgnoreCase);
 
             joinCodeCreated = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
             Debug.Log("Relay Join Code: " + joinCodeCreated);
@@ -152,7 +165,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
             int maxPlayersTotal = maxClientConnections + 1;
 
-            hostLobby = await LobbyService.Instance.CreateLobbyAsync(
+            Lobby createdLobby = await LobbyService.Instance.CreateLobbyAsync(
                 lobbyName,
                 maxPlayersTotal,
                 new CreateLobbyOptions
@@ -160,10 +173,18 @@ public class RelayNetworkStartupUI : MonoBehaviour
                     IsPrivate = lobbyPrivate,
                     Data = new Dictionary<string, DataObject>
                     {
-                        { "relayJoinCode", new DataObject(DataObject.VisibilityOptions.Public, joinCodeCreated) }
+                    { "relayJoinCode", new DataObject(DataObject.VisibilityOptions.Public, joinCodeCreated) }
                     }
                 }
             );
+
+            if (createdLobby == null)
+                throw new Exception("CreateLobbyAsync returned null.");
+
+            hostLobby = createdLobby;
+
+            Debug.Log($"Created lobby: {hostLobby.Name}");
+            Debug.Log($"Created lobby id: {hostLobby.Id}");
 
             if (heartbeatRoutine != null)
                 StopCoroutine(heartbeatRoutine);
@@ -175,7 +196,6 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
             bool ok = NetworkManager.Singleton.StartHost();
 
-
             if (!ok)
             {
                 status = "StartHost() failed. Cleaning up lobby...";
@@ -186,10 +206,12 @@ public class RelayNetworkStartupUI : MonoBehaviour
             }
             else
             {
-                await EnsureUGSReady();
-                await EnsureVivoxReady();
-                await VivoxService.Instance.JoinGroupChannelAsync(hostLobby.Id, ChatCapability.AudioOnly);
+                if (string.IsNullOrWhiteSpace(createdLobby.Id))
+                    throw new Exception("createdLobby.Id is null or empty before Vivox join.");
 
+                Debug.Log($"Joining Vivox with lobby id: {createdLobby.Id}");
+                await VivoxService.Instance.JoinGroupChannelAsync(createdLobby.Id, ChatCapability.AudioOnly);
+                Debug.Log("Joined Vivox host channel");
 
                 status = lobbyPrivate
                     ? $"Host started. Lobby is PRIVATE. Share join code: {joinCodeCreated}"
@@ -218,6 +240,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
         try
         {
             await EnsureUGSReady();
+            await EnsureVivoxReady();
 
             string joinCodeInput = joinCodeInputField != null ? joinCodeInputField.text.Trim() : "";
 
@@ -226,12 +249,17 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCodeInput);
 
+            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxClientConnections);
+
+            if (NetworkManager.Singleton == null)
+                throw new Exception("NetworkManager.Singleton is null. Make sure there is an active NetworkManager in the scene.");
+
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             if (transport == null)
                 throw new Exception("UnityTransport not found on NetworkManager.");
 
-            transport.SetRelayServerData(AllocationUtils.ToRelayServerData(joinAllocation, connectionType));
-            transport.UseWebSockets = connectionType.Equals("wss", StringComparison.OrdinalIgnoreCase);
+            transport.SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
+            transport.UseWebSockets = string.Equals(connectionType, "wss", StringComparison.OrdinalIgnoreCase);
 
             status = "Starting Client...";
             RefreshVisuals();
@@ -240,8 +268,8 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
             if (ok && joinedLobby != null)
             {
+                Debug.Log($"Vivox logged in: {VivoxService.Instance.IsLoggedIn}");
                 await VivoxService.Instance.JoinGroupChannelAsync(joinedLobby.Id, ChatCapability.AudioOnly);
-
                 status = "Client started and joined voice.";
             }
             else
@@ -365,8 +393,8 @@ public class RelayNetworkStartupUI : MonoBehaviour
         {
             try
             {
-                await VivoxService.Instance.LeaveChannelAsync(hostLobby.Id);
-
+                if (vivoxReady && VivoxService.Instance.IsLoggedIn)
+                    await VivoxService.Instance.LeaveChannelAsync(hostLobby.Id);
             }
             catch { }
 
@@ -383,7 +411,8 @@ public class RelayNetworkStartupUI : MonoBehaviour
         {
             try
             {
-                await VivoxService.Instance.LeaveChannelAsync(joinedLobby.Id);  
+                if (vivoxReady && VivoxService.Instance.IsLoggedIn)
+                    await VivoxService.Instance.LeaveChannelAsync(joinedLobby.Id);
             }
             catch { }
 
@@ -395,7 +424,24 @@ public class RelayNetworkStartupUI : MonoBehaviour
     {
         _ = SafeDeleteHostLobby();
     }
+    /*/[ContextMenu("Test Vivox Echo")]
+    private async void TestVivoxEcho()
+    {
+        try
+        {
+            await EnsureUGSReady();
+            await EnsureVivoxReady();
 
+            Debug.Log($"Vivox logged in before echo: {VivoxService.Instance.IsLoggedIn}");
+
+            await VivoxService.Instance.JoinEchoChannelAsync("echo_test", ChatCapability.AudioOnly);
+            Debug.Log("Echo channel joined successfully");
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }*/
     private static System.Threading.Tasks.Task EnsureUGSReady()
     {
         if (ugsReady)
