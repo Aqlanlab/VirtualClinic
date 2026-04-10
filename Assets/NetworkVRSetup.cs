@@ -1,30 +1,43 @@
-using UnityEngine;
 using Unity.Netcode;
+using UnityEngine;
 
 public class NetworkVRSetup : NetworkBehaviour
 {
-    [SerializeField] private IKTargetFollowVRRig ikFollower;
+    public Transform avatarHead;
+    public Transform avatarLeftHand;
+    public Transform avatarRightHand;
+
+    private mainUserRef localRig;
 
     public override void OnNetworkSpawn()
     {
         if (!IsOwner)
         {
-            if (ikFollower != null)
-                ikFollower.enabled = false;
+            enabled = false;
             return;
         }
 
-        mainUserRef refs = FindFirstObjectByType<mainUserRef>();
+        localRig = FindFirstObjectByType<mainUserRef>();
 
-        if (refs == null)
+        if (localRig == null)
         {
-            Debug.LogError("MainUserReferences not found.");
-            return;
+            Debug.LogError("mainUserRef not found in scene.");
+            enabled = false;
         }
+    }
 
-        ikFollower.head.vrTarget = refs.head;
-        ikFollower.leftHand.vrTarget = refs.leftHand;
-        ikFollower.rightHand.vrTarget = refs.rightHand;
-        ikFollower.enabled = true;
+    private void LateUpdate()
+    {
+        if (!IsOwner || localRig == null)
+            return;
+
+        avatarHead.position = localRig.head.position;
+        avatarHead.rotation = localRig.head.rotation;
+
+        avatarLeftHand.position = localRig.leftHand.position;
+        avatarLeftHand.rotation = localRig.leftHand.rotation;
+
+        avatarRightHand.position = localRig.rightHand.position;
+        avatarRightHand.rotation = localRig.rightHand.rotation;
     }
 }

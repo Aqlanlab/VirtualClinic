@@ -18,6 +18,7 @@ using Unity.Services.Vivox;
 public class RelayNetworkStartupUI : MonoBehaviour
 {
     [Header("UI References")]
+    // Main menu buttons for hosting, joining, and browsing lobbies
     public Button hostButton;
     public Button refreshButton;
     public Button joinSelectedButton;
@@ -25,46 +26,58 @@ public class RelayNetworkStartupUI : MonoBehaviour
     public Button prevLobbyButton;
     public Button nextLobbyButton;
 
+    // UI text fields for selected lobby, status messages, and host join code
     public TMP_Text selectedLobbyText;
     public TMP_Text statusText;
     public TMP_Text joinCodeCreatedText;
 
+    // Input field for entering a Relay join code manually
     public TMP_InputField joinCodeInputField;
 
     [Header("Relay Settings")]
+    // Number of clients allowed to join, not counting the host
     [Tooltip("Number of CLIENT connections allowed (host not counted). Example: 3 means host + 3 clients = 4 players.")]
     public int maxClientConnections = 3;
 
+    // Relay transport type: udp, dtls, or wss
     [Tooltip("udp / dtls / wss. Use 'dtls' for encrypted, 'wss' for WebGL.")]
     public string connectionType = "dtls";
 
     [Header("Lobby Settings")]
+    // Name shown in the public/private lobby list
     [Tooltip("Name shown in the lobby list.")]
     public string lobbyName = "Clinic Lobby";
 
+    // If true, the lobby will not appear in public searches
     [Tooltip("If true, the lobby won't show up in public queries.")]
     public bool lobbyPrivate = false;
 
+    // How often the host sends heartbeat pings to keep the lobby alive
     [Tooltip("Heartbeat interval (seconds). Must be < 30s to keep lobby active/visible.")]
     public float lobbyHeartbeatSeconds = 15f;
 
+    // Stores the current host join code and UI state
     private string joinCodeCreated = "";
     private bool busy;
     private string status = "";
 
+    // Host lobby reference and its heartbeat coroutine
     private Lobby hostLobby;
     private Coroutine heartbeatRoutine;
 
+    // Current queried lobby list and selected index
     private List<Lobby> lobbyList = new List<Lobby>();
     private int selectedLobbyIndex = -1;
 
+    // Shared initialization state for Unity Services
     private static bool ugsReady;
     private static System.Threading.Tasks.Task initTask;
 
+    // Shared initialization state for Vivox
     private static bool vivoxReady;
     private static System.Threading.Tasks.Task vivoxInitTask;
 
-    private Lobby joinedLobby;   // for clients
+    private Lobby joinedLobby; // The lobby a client joined, used later for voice join
 
     private async void Awake()
 {
@@ -249,16 +262,17 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
             JoinAllocation joinAllocation = await RelayService.Instance.JoinAllocationAsync(joinCodeInput);
 
-            Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxClientConnections);
-
             if (NetworkManager.Singleton == null)
-                throw new Exception("NetworkManager.Singleton is null. Make sure there is an active NetworkManager in the scene.");
+                throw new Exception("NetworkManager.Singleton is null.");
 
             var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
             if (transport == null)
                 throw new Exception("UnityTransport not found on NetworkManager.");
 
-            transport.SetRelayServerData(AllocationUtils.ToRelayServerData(allocation, connectionType));
+            if (string.IsNullOrWhiteSpace(connectionType))
+                connectionType = "dtls";
+
+            transport.SetRelayServerData(AllocationUtils.ToRelayServerData(joinAllocation, connectionType));
             transport.UseWebSockets = string.Equals(connectionType, "wss", StringComparison.OrdinalIgnoreCase);
 
             status = "Starting Client...";
@@ -268,7 +282,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
             if (ok && joinedLobby != null)
             {
-                Debug.Log($"Vivox logged in: {VivoxService.Instance.IsLoggedIn}");
+                Debug.Log($"Vivox initialized/logged in: {vivoxReady} / {VivoxService.Instance.IsLoggedIn}");
                 await VivoxService.Instance.JoinGroupChannelAsync(joinedLobby.Id, ChatCapability.AudioOnly);
                 status = "Client started and joined voice.";
             }
@@ -389,15 +403,17 @@ public class RelayNetworkStartupUI : MonoBehaviour
             heartbeatRoutine = null;
         }
 
+        try
+        {
+            if (vivoxReady && VivoxService.Instance != null && VivoxService.Instance.IsLoggedIn)
+            {
+                await VivoxService.Instance.LeaveAllChannelsAsync();
+            }
+        }
+        catch { }
+
         if (hostLobby != null)
         {
-            try
-            {
-                if (vivoxReady && VivoxService.Instance.IsLoggedIn)
-                    await VivoxService.Instance.LeaveChannelAsync(hostLobby.Id);
-            }
-            catch { }
-
             try
             {
                 await LobbyService.Instance.DeleteLobbyAsync(hostLobby.Id);
@@ -407,17 +423,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
             hostLobby = null;
         }
 
-        if (joinedLobby != null)
-        {
-            try
-            {
-                if (vivoxReady && VivoxService.Instance.IsLoggedIn)
-                    await VivoxService.Instance.LeaveChannelAsync(joinedLobby.Id);
-            }
-            catch { }
-
-            joinedLobby = null;
-        }
+        joinedLobby = null;
     }
 
     private void OnDestroy()
