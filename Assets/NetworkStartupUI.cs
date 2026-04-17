@@ -405,9 +405,10 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
         try
         {
-            if (vivoxReady && VivoxService.Instance != null && VivoxService.Instance.IsLoggedIn)
+            if (VivoxService.Instance != null && VivoxService.Instance.IsLoggedIn)
             {
                 await VivoxService.Instance.LeaveAllChannelsAsync();
+                await VivoxService.Instance.LogoutAsync();
             }
         }
         catch { }
@@ -430,24 +431,6 @@ public class RelayNetworkStartupUI : MonoBehaviour
     {
         _ = SafeDeleteHostLobby();
     }
-    /*/[ContextMenu("Test Vivox Echo")]
-    private async void TestVivoxEcho()
-    {
-        try
-        {
-            await EnsureUGSReady();
-            await EnsureVivoxReady();
-
-            Debug.Log($"Vivox logged in before echo: {VivoxService.Instance.IsLoggedIn}");
-
-            await VivoxService.Instance.JoinEchoChannelAsync("echo_test", ChatCapability.AudioOnly);
-            Debug.Log("Echo channel joined successfully");
-        }
-        catch (Exception e)
-        {
-            Debug.LogException(e);
-        }
-    }*/
     private static System.Threading.Tasks.Task EnsureUGSReady()
     {
         if (ugsReady)
@@ -490,8 +473,11 @@ public class RelayNetworkStartupUI : MonoBehaviour
     }
     private static System.Threading.Tasks.Task EnsureVivoxReady()
     {
-        if (vivoxReady)
+        if (VivoxService.Instance != null && VivoxService.Instance.IsLoggedIn)
+        {
+            vivoxReady = true;
             return System.Threading.Tasks.Task.CompletedTask;
+        }
 
         if (vivoxInitTask != null)
             return vivoxInitTask;
@@ -514,8 +500,17 @@ public class RelayNetworkStartupUI : MonoBehaviour
         }
         finally
         {
-            if (!vivoxReady)
+            if (!(VivoxService.Instance != null && VivoxService.Instance.IsLoggedIn))
                 vivoxInitTask = null;
         }
+    }
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetStaticState()
+    {
+        ugsReady = false;
+        initTask = null;
+        vivoxReady = false;
+        vivoxInitTask = null;
     }
 }
