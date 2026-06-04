@@ -4,25 +4,29 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PaintingEyeTrackerRecorder : MonoBehaviour
+public class PaintingEyeTrackingRecorder : MonoBehaviour
 {
-    [Header("Painting Setup")]
+    [Header("Painting")]
     public Collider paintingCollider;
 
     [Header("Recording Settings")]
     public float sampleRate = 30f;
     public float rayDistance = 50f;
 
+    [Header("Testing")]
+    public KeyCode toggleKey = KeyCode.R;
+    public bool recordOnStart = false;
+
     [Header("Debug")]
-    public bool showDebugRay = true;
+    public bool drawDebugRay = true;
 
     private InputAction gazePositionAction;
     private InputAction gazeRotationAction;
 
     private StreamWriter writer;
     private string filePath;
-    private bool isRecording = false;
-    private float nextSampleTime = 0f;
+    private bool isRecording;
+    private float nextSampleTime;
 
     private void OnEnable()
     {
@@ -42,8 +46,21 @@ public class PaintingEyeTrackerRecorder : MonoBehaviour
         gazeRotationAction.Enable();
     }
 
+    private void Start()
+    {
+        if (recordOnStart)
+        {
+            StartRecording();
+        }
+    }
+
     private void Update()
     {
+        if (Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            ToggleRecording();
+        }
+
         if (!isRecording)
         {
             return;
@@ -56,94 +73,70 @@ public class PaintingEyeTrackerRecorder : MonoBehaviour
 
         nextSampleTime = Time.time + (1f / sampleRate);
 
-        RecordEyeSample();
+        RecordSample();
     }
 
-    private void RecordEyeSample()
+    private void RecordSample()
     {
-        Vector3 gazePosition = gazePositionAction.ReadValue<Vector3>();
+        Vector3 gazeOrigin = gazePositionAction.ReadValue<Vector3>();
         Quaternion gazeRotation = gazeRotationAction.ReadValue<Quaternion>();
 
-        bool gazeValid = !(gazePosition == Vector3.zero && gazeRotation == Quaternion.identity);
+        bool gazeValid = !(gazeOrigin == Vector3.zero && gazeRotation == Quaternion.identity);
 
         Vector3 gazeDirection = gazeRotation * Vector3.forward;
 
         bool hitPainting = false;
-        Vector2 imageUV = new(-1f, -1f);
+        Vector2 imageUV = new Vector2(-1f, -1f);
         Vector3 hitPoint = Vector3.zero;
-        string zoneName = "None";
+        float hitDistance = -1f;
 
         if (gazeValid)
         {
-            if (showDebugRay)
+            if (drawDebugRay)
             {
-                Debug.DrawRay(gazePosition, gazeDirection * rayDistance, Color.red);
+                Debug.DrawRay(gazeOrigin, gazeDirection * rayDistance, Color.red);
             }
 
-            Ray ray = new(gazePosition, gazeDirection);
+            Ray gazeRay = new Ray(gazeOrigin, gazeDirection);
 
-            if (Physics.Raycast(ray, out RaycastHit hit, rayDistance))
+            if (Physics.Raycast(gazeRay, out RaycastHit hit, rayDistance))
             {
                 if (hit.collider == paintingCollider)
                 {
                     hitPainting = true;
-                    hitPoint = hit.point;
-
-                    // For a Quad or Plane with a Mesh Collider,
-                    // this gives the position on the image from 0 to 1.
                     imageUV = hit.textureCoord;
-
-                    zoneName = GetZoneName(imageUV);
+                    hitPoint = hit.point;
+                    hitDistance = hit.distance;
                 }
             }
         }
 
         string line = string.Format(
             CultureInfo.InvariantCulture,
-            "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12}",
+            "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16},{17},{18}",
             DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff"),
             Time.time,
             gazeValid,
+            gazeOrigin.x,
+            gazeOrigin.y,
+            gazeOrigin.z,
+            gazeRotation.x,
+            gazeRotation.y,
+            gazeRotation.z,
+            gazeRotation.w,
+            gazeDirection.x,
+            gazeDirection.y,
+            gazeDirection.z,
             hitPainting,
             imageUV.x,
             imageUV.y,
-            zoneName,
             hitPoint.x,
             hitPoint.y,
             hitPoint.z,
-            gazePosition.x,
-            gazePosition.y,
-            gazePosition.z
+            hitDistance
         );
 
         writer.WriteLine(line);
-    }
-
-    private string GetZoneName(Vector2 uv)
-    {
-        if (uv.x < 0f || uv.y < 0f)
-        {
-            return "None";
-        }
-
-        // Splits painting into 9 zones.
-        if (uv.y >= 0.66f)
-        {
-            if (uv.x < 0.33f) return "Top Left";
-            if (uv.x < 0.66f) return "Top Center";
-            return "Top Right";
-        }
-
-        if (uv.y >= 0.33f)
-        {
-            if (uv.x < 0.33f) return "Middle Left";
-            if (uv.x < 0.66f) return "Middle Center";
-            return "Middle Right";
-        }
-
-        if (uv.x < 0.33f) return "Bottom Left";
-        if (uv.x < 0.66f) return "Bottom Center";
-        return "Bottom Right";
     }
 
     public void StartRecording()
@@ -153,7 +146,14 @@ public class PaintingEyeTrackerRecorder : MonoBehaviour
             return;
         }
 
-        string folderPath = Path.Combine(Application.persistentDataPath, "EyeTrackingData");
+        if (paintingCollider == null)
+        {
+            Debug.LogError("Painting Collider is not assigned.");
+            return;
+        }
+
+        string projectRoot = Directory.GetParent(Application.dataPath).FullName;
+        string folderPath = Path.Combine(projectRoot, "EyeTrackingData");
 
         if (!Directory.Exists(folderPath))
         {
@@ -166,14 +166,19 @@ public class PaintingEyeTrackerRecorder : MonoBehaviour
         writer = new StreamWriter(filePath);
 
         writer.WriteLine(
-            "RealTime,UnityTime,GazeValid,HitPainting,ImageX,ImageY,ZoneName," +
-            "HitPointX,HitPointY,HitPointZ,GazeOriginX,GazeOriginY,GazeOriginZ"
+            "RealTime,UnityTime,GazeValid," +
+            "GazeOriginX,GazeOriginY,GazeOriginZ," +
+            "GazeRotX,GazeRotY,GazeRotZ,GazeRotW," +
+            "GazeDirX,GazeDirY,GazeDirZ," +
+            "HitPainting,ImageX,ImageY," +
+            "HitPointX,HitPointY,HitPointZ,HitDistance"
         );
 
         isRecording = true;
         nextSampleTime = Time.time;
 
-        Debug.Log("Started eye tracking recording: " + filePath);
+        Debug.Log("Eye tracking recording started.");
+        Debug.Log("CSV path: " + filePath);
     }
 
     public void StopRecording()
@@ -192,7 +197,8 @@ public class PaintingEyeTrackerRecorder : MonoBehaviour
             writer = null;
         }
 
-        Debug.Log("Stopped eye tracking recording. Saved to: " + filePath);
+        Debug.Log("Eye tracking recording stopped.");
+        Debug.Log("Saved CSV to: " + filePath);
     }
 
     public void ToggleRecording()
@@ -211,11 +217,17 @@ public class PaintingEyeTrackerRecorder : MonoBehaviour
     {
         StopRecording();
 
-        gazePositionAction.Disable();
-        gazeRotationAction.Disable();
+        if (gazePositionAction != null)
+        {
+            gazePositionAction.Disable();
+            gazePositionAction.Dispose();
+        }
 
-        gazePositionAction.Dispose();
-        gazeRotationAction.Dispose();
+        if (gazeRotationAction != null)
+        {
+            gazeRotationAction.Disable();
+            gazeRotationAction.Dispose();
+        }
     }
 
     private void OnApplicationQuit()

@@ -7,7 +7,10 @@ using UnityEngine.Networking;
 
 public class SpeechRecorder : MonoBehaviour
 {
+    [Header("Server")]
     public string serverUrl = "http://127.0.0.1:5000/transcribe";
+
+    [Header("Recording Settings")]
     public int sampleRate = 16000;
     public int maxRecordSeconds = 30;
 
@@ -16,69 +19,112 @@ public class SpeechRecorder : MonoBehaviour
 
     public void StartRecording()
     {
-        micDevice = null; // default microphone
-        recordedClip = Microphone.Start(micDevice, false, maxRecordSeconds, sampleRate);
-        Debug.Log("Recording started...");
+        if (Microphone.devices.Length == 0)
+        {
+            Debug.LogError("No microphone found.");
+            return;
+        }
+
+        micDevice = Microphone.devices[0];
+
+        recordedClip = Microphone.Start(
+            micDevice,
+            false,
+            maxRecordSeconds,
+            sampleRate
+        );
+
+        Debug.Log("Recording started using mic: " + micDevice);
     }
 
     public void StopRecording()
     {
+        if (recordedClip == null)
+        {
+            Debug.LogError("No recording found. Did you press StartRecording first?");
+            return;
+        }
+
         int position = Microphone.GetPosition(micDevice);
+
         Microphone.End(micDevice);
 
-        if (recordedClip == null || position <= 0)
+        if (position <= 0)
         {
-            Debug.LogError("No audio recorded.");
+            Debug.LogError("No audio was recorded.");
             return;
         }
 
         AudioClip trimmedClip = TrimClip(recordedClip, position);
+
         byte[] wavData = ConvertAudioClipToWav(trimmedClip);
 
-        string audioPath = Path.Combine(Application.persistentDataPath, "recording.wav");
+        string recordingsFolder = Path.Combine(Application.persistentDataPath, "recordings");
+
+        if (!Directory.Exists(recordingsFolder))
+        {
+            Directory.CreateDirectory(recordingsFolder);
+        }
+
+        string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
+        string audioFileName = "recording_" + timestamp + ".wav";
+        string audioPath = Path.Combine(recordingsFolder, audioFileName);
+
         File.WriteAllBytes(audioPath, wavData);
 
-        Debug.Log("Saved audio to: " + audioPath);
+        Debug.Log("Saved WAV file to: " + audioPath);
 
-        StartCoroutine(SendAudioToServer(wavData));
+        StartCoroutine(SendAudioToServer(wavData, audioFileName));
     }
 
-    private IEnumerator SendAudioToServer(byte[] wavData)
+    private IEnumerator SendAudioToServer(byte[] wavData, string audioFileName)
     {
         WWWForm form = new WWWForm();
-        form.AddBinaryData("audio", wavData, "recording.wav", "audio/wav");
+        form.AddBinaryData("audio", wavData, audioFileName, "audio/wav");
 
-        using UnityWebRequest request = UnityWebRequest.Post(serverUrl, form);
-        yield return request.SendWebRequest();
-
-        if (request.result != UnityWebRequest.Result.Success)
+        using (UnityWebRequest request = UnityWebRequest.Post(serverUrl, form))
         {
-            Debug.LogError("Transcription failed: " + request.error);
-        }
-        else
-        {
-            string transcript = request.downloadHandler.text;
-            Debug.Log("Transcript: " + transcript);
+            yield return request.SendWebRequest();
 
-            SaveTranscriptToCSV(transcript);
+            if (request.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError("Transcription failed: " + request.error);
+                Debug.LogError("Server response: " + request.downloadHandler.text);
+            }
+            else
+            {
+                string transcript = request.downloadHandler.text;
+
+                Debug.Log("Transcript: " + transcript);
+
+                SaveTranscriptToCSV(transcript, audioFileName);
+            }
         }
     }
 
-    private void SaveTranscriptToCSV(string transcript)
+    private void SaveTranscriptToCSV(string transcript, string audioFileName)
     {
         string csvPath = Path.Combine(Application.persistentDataPath, "speech_transcripts.csv");
 
-        if (!File.Exists(csvPath))
+        try
         {
-            File.WriteAllText(csvPath, "Time,Transcript\n");
+            if (!File.Exists(csvPath))
+            {
+                File.WriteAllText(csvPath, "Time,AudioFile,Transcript\n");
+            }
+
+            string cleanTranscript = transcript.Replace("\"", "\"\"");
+            string line = $"\"{DateTime.Now}\",\"{audioFileName}\",\"{cleanTranscript}\"\n";
+
+            File.AppendAllText(csvPath, line);
+
+            Debug.Log("Saved transcript CSV to: " + csvPath);
         }
-
-        string cleanTranscript = transcript.Replace("\"", "\"\"");
-        string line = $"\"{DateTime.Now}\",\"{cleanTranscript}\"\n";
-
-        File.AppendAllText(csvPath, line);
-
-        Debug.Log("Saved transcript to: " + csvPath);
+        catch (IOException e)
+        {
+            Debug.LogError("Could not save transcript. Close the CSV file if it is open in Excel.");
+            Debug.LogError(e.Message);
+        }
     }
 
     private AudioClip TrimClip(AudioClip clip, int samples)
@@ -95,6 +141,7 @@ public class SpeechRecorder : MonoBehaviour
         );
 
         trimmedClip.SetData(data, 0);
+
         return trimmedClip;
     }
 
@@ -103,37 +150,64 @@ public class SpeechRecorder : MonoBehaviour
         float[] samples = new float[clip.samples * clip.channels];
         clip.GetData(samples, 0);
 
-        short[] intData = new short[samples.Length];
-        byte[] bytesData = new byte[samples.Length * 2];
+        // Convert stereo to mono if needed.
+        float[] monoSamples;
 
-        for (int i = 0; i < samples.Length; i++)
+        if (clip.channels == 1)
         {
-            intData[i] = (short)(samples[i] * short.MaxValue);
-            byte[] byteArr = BitConverter.GetBytes(intData[i]);
+            monoSamples = samples;
+        }
+        else
+        {
+            int monoLength = samples.Length / clip.channels;
+            monoSamples = new float[monoLength];
+
+            for (int i = 0; i < monoLength; i++)
+            {
+                float sum = 0f;
+
+                for (int channel = 0; channel < clip.channels; channel++)
+                {
+                    sum += samples[i * clip.channels + channel];
+                }
+
+                monoSamples[i] = sum / clip.channels;
+            }
+        }
+
+        byte[] bytesData = new byte[monoSamples.Length * 2];
+
+        for (int i = 0; i < monoSamples.Length; i++)
+        {
+            short intSample = (short)(Mathf.Clamp(monoSamples[i], -1f, 1f) * short.MaxValue);
+            byte[] byteArr = BitConverter.GetBytes(intSample);
             byteArr.CopyTo(bytesData, i * 2);
         }
 
-        using MemoryStream stream = new MemoryStream();
+        using (MemoryStream stream = new MemoryStream())
+        {
+            int hz = clip.frequency;
+            int channels = 1;
+            int byteRate = hz * channels * 2;
 
-        int hz = clip.frequency;
-        int channels = clip.channels;
-        int sampleCount = samples.Length;
+            stream.Write(Encoding.ASCII.GetBytes("RIFF"), 0, 4);
+            stream.Write(BitConverter.GetBytes(36 + bytesData.Length), 0, 4);
+            stream.Write(Encoding.ASCII.GetBytes("WAVE"), 0, 4);
 
-        stream.Write(Encoding.ASCII.GetBytes("RIFF"), 0, 4);
-        stream.Write(BitConverter.GetBytes(36 + bytesData.Length), 0, 4);
-        stream.Write(Encoding.ASCII.GetBytes("WAVE"), 0, 4);
-        stream.Write(Encoding.ASCII.GetBytes("fmt "), 0, 4);
-        stream.Write(BitConverter.GetBytes(16), 0, 4);
-        stream.Write(BitConverter.GetBytes((short)1), 0, 2);
-        stream.Write(BitConverter.GetBytes((short)channels), 0, 2);
-        stream.Write(BitConverter.GetBytes(hz), 0, 4);
-        stream.Write(BitConverter.GetBytes(hz * channels * 2), 0, 4);
-        stream.Write(BitConverter.GetBytes((short)(channels * 2)), 0, 2);
-        stream.Write(BitConverter.GetBytes((short)16), 0, 2);
-        stream.Write(Encoding.ASCII.GetBytes("data"), 0, 4);
-        stream.Write(BitConverter.GetBytes(bytesData.Length), 0, 4);
-        stream.Write(bytesData, 0, bytesData.Length);
+            stream.Write(Encoding.ASCII.GetBytes("fmt "), 0, 4);
+            stream.Write(BitConverter.GetBytes(16), 0, 4);
+            stream.Write(BitConverter.GetBytes((short)1), 0, 2);
+            stream.Write(BitConverter.GetBytes((short)channels), 0, 2);
+            stream.Write(BitConverter.GetBytes(hz), 0, 4);
+            stream.Write(BitConverter.GetBytes(byteRate), 0, 4);
+            stream.Write(BitConverter.GetBytes((short)(channels * 2)), 0, 2);
+            stream.Write(BitConverter.GetBytes((short)16), 0, 2);
 
-        return stream.ToArray();
+            stream.Write(Encoding.ASCII.GetBytes("data"), 0, 4);
+            stream.Write(BitConverter.GetBytes(bytesData.Length), 0, 4);
+            stream.Write(bytesData, 0, bytesData.Length);
+
+            return stream.ToArray();
+        }
     }
 }
