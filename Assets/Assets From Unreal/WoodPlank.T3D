@@ -1,0 +1,38 @@
+Begin Object Class=/Script/Engine.Material Name="WoodPlank"
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureCoordinate Name="MaterialExpressionTextureCoordinate_1"
+   End Object
+   Begin Object Class=/Script/Engine.MaterialExpressionTextureSample Name="MaterialExpressionTextureSample_0"
+   End Object
+   Begin Object Class=/Script/UnrealEd.SceneThumbnailInfoWithPrimitive Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   Begin Object Name="MaterialExpressionTextureCoordinate_1"
+      UTiling=2.000000
+      VTiling=2.000000
+      MaterialExpressionEditorX=-576
+      MaterialExpressionEditorY=-16
+      MaterialExpressionGuid=F3819C6C42DA32C2FACC04A49E760C86
+      Material=Material'"WoodPlank"'
+   End Object
+   Begin Object Name="MaterialExpressionTextureSample_0"
+      Coordinates=(Expression=MaterialExpressionTextureCoordinate'"WoodPlank:MaterialExpressionTextureCoordinate_1"')
+      Texture=Texture2D'"/Game/TMChairsAndTablesPack1/ChairsAndTables/_common/textures/T_WoodClean04_BC.T_WoodClean04_BC"'
+      MaterialExpressionEditorX=-352
+      MaterialExpressionEditorY=-32
+      MaterialExpressionGuid=6C170F8449084F1485A73797860D9628
+      Material=Material'"WoodPlank"'
+   End Object
+   Begin Object Name="SceneThumbnailInfoWithPrimitive_0"
+   End Object
+   BaseColor=(Expression=MaterialExpressionTextureSample'"MaterialExpressionTextureSample_0"',Mask=1,MaskR=1,MaskG=1,MaskB=1)
+   bUsedWithStaticLighting=True
+   Expressions(0)=MaterialExpressionTextureSample'"MaterialExpressionTextureSample_0"'
+   Expressions(1)=MaterialExpressionTextureCoordinate'"MaterialExpressionTextureCoordinate_1"'
+   bCanMaskedBeAssumedOpaque=True
+   StateId=9ACBC27F47B505E8B64607BA98A237E2
+   CachedExpressionData=(ReferencedTextures=(Texture2D'"/Game/TMChairsAndTablesPack1/ChairsAndTables/_common/textures/T_WoodClean04_BC.T_WoodClean04_BC"'),QualityLevelsUsed=(False,False,False,False))
+   ReferencedTextureGuids(0)=D9616F1449B55F689E354D90206A83CA
+   TextureStreamingDataVersion=1
+   TextureStreamingData(0)=(SamplingScale=2.000000,UVChannelIndex=0,TextureName="T_WoodClean04_BC",TextureReference=/Game/TMChairsAndTablesPack1/ChairsAndTables/_common/textures/T_WoodClean04_BC.T_WoodClean04_BC)
+   ThumbnailInfo=SceneThumbnailInfoWithPrimitive'"SceneThumbnailInfoWithPrimitive_0"'
+   LightingGuid=6831DCFE4D3A25758D875EADDDB4DE3F
+End Object

@@ -3,7 +3,22 @@ guid: 2eeb8ff965129554e9c3be6f7b8efe61
 ModelImporter:
   serializedVersion: 24200
   internalIDToNameTable: []
-  externalObjects: {}
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: LampBase
+    second: {fileID: 2100000, guid: f5ae8c885afb40f449df07cfe8d2596f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_BuildingGlass
+    second: {fileID: 2100000, guid: 85b94381c1c841844b03ee61c0a7049c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Metal_Chrome
+    second: {fileID: 2100000, guid: cabdd3bcf2d1dcc4f86f11717d0d69cb, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0
