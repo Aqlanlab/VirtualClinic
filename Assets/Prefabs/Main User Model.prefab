@@ -1,0 +1,513 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &1856034039863447964
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2707443990416806865, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 41.068527
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.6069378
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -37.42532
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_Name
+      value: Main User Model
+      objectReference: {fileID: 0}
+    - target: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7916052085047493841, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: GlobalObjectIdHash
+      value: 2322943601
+      objectReference: {fileID: 0}
+    - target: {fileID: 7916052085047493841, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: InScenePlacedSourceGlobalObjectIdHash
+      value: 4248239636
+      objectReference: {fileID: 0}
+    - target: {fileID: 9003275895938500680, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 1720c98616a0f194dae551fe7645b49b, type: 2}
+    - target: {fileID: 9003275895938500680, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_AnimatePhysics
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 7140506709010968540, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+    - {fileID: 8498853764652032846, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+    - {fileID: 8518443048099875580, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+    - {fileID: 7644091907901390196, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+    - {fileID: 4417994304553903994, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2541124554147049036}
+    - targetCorrespondingSourceObject: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2577650504795166780}
+    - targetCorrespondingSourceObject: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1804024438714066056}
+    - targetCorrespondingSourceObject: {fileID: 208872535862064029, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7166616952401888764}
+    - targetCorrespondingSourceObject: {fileID: 5644309056085679555, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8576103283070854609}
+    - targetCorrespondingSourceObject: {fileID: 7747794030342876437, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6553620945926419126}
+    - targetCorrespondingSourceObject: {fileID: 2350032065230518028, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2527665786883092952}
+    - targetCorrespondingSourceObject: {fileID: 8932776033650347559, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 506284155678316557}
+  m_SourcePrefab: {fileID: 100100000, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+--- !u!1 &1956784724177101313 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 208872535862064029, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &7166616952401888764
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1956784724177101313}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 0
+  RotationInterpolationType: 0
+  ScaleInterpolationType: 0
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
+--- !u!4 &3304079370764664412 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3754743761268617152, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4133469475478414992 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2350032065230518028, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2527665786883092952
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4133469475478414992}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 0
+  RotationInterpolationType: 0
+  ScaleInterpolationType: 0
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
+--- !u!4 &4380206918597831602 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2668501372200253998, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &4819778112163927869 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2541124554147049036
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4819778112163927869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75e359571be192443bd2ff66dea1d591, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  ShowTopMostFoldoutHeaderGroup: 1
+  avatarHead: {fileID: 4380206918597831602}
+  avatarLeftHand: {fileID: 6610712890331284483}
+  avatarRightHand: {fileID: 3304079370764664412}
+--- !u!114 &2577650504795166780
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4819778112163927869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acc6dda00760af74eb522319885064e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: '::'
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 0
+  RotationInterpolationType: 0
+  ScaleInterpolationType: 0
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
+--- !u!114 &1804024438714066056
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4819778112163927869}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 61a144f4019577a4684e3c370e321322, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AnimateOnInput
+  inputActions: {fileID: -944628639613478452, guid: 203309967a00c3d41a41301a49e059bd, type: 3}
+  animationInputs:
+  - animationPropertyName: Right pinch
+    actionName: RightHand/TriggerPress
+    action:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 0992b9a0-4fca-4a3c-b847-efb1fa212f6d
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+  - animationPropertyName: 'Right Grab '
+    actionName: RightHand/grip
+    action:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: edece756-18ce-4276-a700-82ee229ebef4
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+  - animationPropertyName: left pinch
+    actionName: LeftHand/triggerPress
+    action:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 73b1af00-a198-4a47-9d00-9ea9820a96d4
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+  - animationPropertyName: left grab
+    actionName: LeftHand/grip
+    action:
+      m_Name: 
+      m_Type: 0
+      m_ExpectedControlType: 
+      m_Id: 61321fe5-f9de-4dce-b7f3-c9303d2fe5e3
+      m_Processors: 
+      m_Interactions: 
+      m_SingletonActionBindings: []
+      m_Flags: 0
+  animator: {fileID: 7292447760930331092}
+--- !u!1 &6311064864980323423 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5644309056085679555, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8576103283070854609
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6311064864980323423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 0
+  RotationInterpolationType: 0
+  ScaleInterpolationType: 0
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
+--- !u!4 &6610712890331284483 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 4790718918590387615, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &7076964096209461179 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8932776033650347559, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &506284155678316557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7076964096209461179}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 0
+  RotationInterpolationType: 0
+  ScaleInterpolationType: 0
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0
+--- !u!95 &7292447760930331092 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 9003275895938500680, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8233781605305597065 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7747794030342876437, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+  m_PrefabInstance: {fileID: 1856034039863447964}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &6553620945926419126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8233781605305597065}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e96cb6065543e43c4a752faaa1468eb1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.Components.NetworkTransform
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 0
+  RotationInterpolationType: 0
+  ScaleInterpolationType: 0
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 0
+  SyncScaleY: 0
+  SyncScaleZ: 0
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0

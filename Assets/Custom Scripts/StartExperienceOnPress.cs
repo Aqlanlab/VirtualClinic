@@ -13,11 +13,10 @@ public class StartPaintingExperience : MonoBehaviour
     [SerializeField]
     private GameObject painting;
 
-    private bool hasStarted;
+    private bool hasStarted = false;
 
     private void Start()
     {
-        // Hide the painting when the scene begins.
         if (painting != null)
         {
             painting.SetActive(false);
@@ -26,29 +25,25 @@ public class StartPaintingExperience : MonoBehaviour
 
     public void StartExperience()
     {
-        Debug.Log("StartExperience called.");
+        Debug.Log("Experience button pressed.");
 
+        // SECOND PRESS = STOP
         if (hasStarted)
         {
+            StopExperience();
             return;
         }
 
+        // FIRST PRESS = START
         hasStarted = true;
 
-        // Show the painting first.
         if (painting != null)
         {
             painting.SetActive(true);
         }
-        else
-        {
-            Debug.LogError("Painting is not assigned.");
-        }
 
-        // Start eye-tracking recording.
         if (eyeTrackingRecorder != null)
         {
-            eyeTrackingRecorder.enabled = true;
             eyeTrackingRecorder.StartRecording();
         }
         else
@@ -56,16 +51,16 @@ public class StartPaintingExperience : MonoBehaviour
             Debug.LogError("Eye Tracking Recorder is not assigned.");
         }
 
-        // Start microphone recording.
         if (speechRecorder != null)
         {
-            speechRecorder.enabled = true;
             speechRecorder.StartRecording();
         }
         else
         {
             Debug.LogError("Speech Recorder is not assigned.");
         }
+
+        Debug.Log("Experience started.");
     }
 
     public void StopExperience()

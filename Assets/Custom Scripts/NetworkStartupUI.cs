@@ -174,6 +174,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
             Debug.Log("Relay Join Code: " + joinCodeCreated);
 
             status = "Creating Lobby (publishing join code)...";
+            
             RefreshVisuals();
 
             int maxPlayersTotal = maxClientConnections + 1;
@@ -198,6 +199,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
 
             Debug.Log($"Created lobby: {hostLobby.Name}");
             Debug.Log($"Created lobby id: {hostLobby.Id}");
+            
 
             if (heartbeatRoutine != null)
                 StopCoroutine(heartbeatRoutine);
@@ -225,6 +227,7 @@ public class RelayNetworkStartupUI : MonoBehaviour
                 Debug.Log($"Joining Vivox with lobby id: {createdLobby.Id}");
                 await VivoxService.Instance.JoinGroupChannelAsync(createdLobby.Id, ChatCapability.AudioOnly);
                 Debug.Log("Joined Vivox host channel");
+                RefreshVisuals();
 
                 status = lobbyPrivate
                     ? $"Host started. Lobby is PRIVATE. Share join code: {joinCodeCreated}"

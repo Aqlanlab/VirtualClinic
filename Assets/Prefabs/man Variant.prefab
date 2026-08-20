@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 2854979998568653783, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4375534569724717202, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
       propertyPath: m_LocalPosition.x
       value: 31.92855
@@ -52,6 +56,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4925014916778174255, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6567021798479873697, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
       propertyPath: m_Name
       value: man Variant
@@ -67,6 +75,10 @@ PrefabInstance:
     - target: {fileID: 7916052085047493841, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
       propertyPath: InScenePlacedSourceGlobalObjectIdHash
       value: 3153370589
+      objectReference: {fileID: 0}
+    - target: {fileID: 8485110739769431359, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 7140506709010968540, guid: 537f1f5e33cd51c44be55256e4cfdc81, type: 3}
@@ -402,3 +414,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: acc6dda00760af74eb522319885064e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  ShowTopMostFoldoutHeaderGroup: 1
+  NetworkTransformExpanded: 0
+  AutoOwnerAuthorityTickOffset: 1
+  PositionInterpolationType: 0
+  RotationInterpolationType: 0
+  ScaleInterpolationType: 0
+  PositionLerpSmoothing: 1
+  PositionMaxInterpolationTime: 0.1
+  RotationLerpSmoothing: 1
+  RotationMaxInterpolationTime: 0.1
+  ScaleLerpSmoothing: 1
+  ScaleMaxInterpolationTime: 0.1
+  AuthorityMode: 0
+  TickSyncChildren: 0
+  UseUnreliableDeltas: 0
+  SyncPositionX: 1
+  SyncPositionY: 1
+  SyncPositionZ: 1
+  SyncRotAngleX: 1
+  SyncRotAngleY: 1
+  SyncRotAngleZ: 1
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
+  PositionThreshold: 0.001
+  RotAngleThreshold: 0.01
+  ScaleThreshold: 0.01
+  UseQuaternionSynchronization: 0
+  UseQuaternionCompression: 0
+  UseHalfFloatPrecision: 0
+  InLocalSpace: 0
+  SwitchTransformSpaceWhenParented: 0
+  Interpolate: 1
+  SlerpPosition: 0

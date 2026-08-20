@@ -108,19 +108,20 @@ public class PaintingEyeTrackingRecorder : MonoBehaviour
         // Gaze Stabilized is already positioned in Unity world space.
         Vector3 gazeOrigin = gazeRayOrigin.position;
 
-        Quaternion gazeRotation = gazeRotationAction.ReadValue<Quaternion>();
+        //Quaternion gazeRotation = gazeRotationAction.ReadValue<Quaternion>();
 
-        Vector3 gazeDirection = (gazeRotation * Vector3.forward).normalized;
+        //Vector3 gazeDirection = (gazeRotation * Vector3.forward).normalized;
+
+        Quaternion gazeRotation = gazeRayOrigin.rotation;
+        Vector3 gazeDirection = gazeRayOrigin.forward.normalized;
 
         // Flip only if the ray is backwards
         //gazeDirection = -gazeDirection;
 
-        bool gazeValid =
-            Mathf.Abs(gazeRotation.x) > 0.0001f ||
-            Mathf.Abs(gazeRotation.y) > 0.0001f ||
-            Mathf.Abs(gazeRotation.z) > 0.0001f ||
-            Mathf.Abs(gazeDirection.x) > 0.0001f ||
-            Mathf.Abs(gazeDirection.y) > 0.0001f;
+        /*bool gazeValid =
+            gazeTrackedAction != null && 
+            gazeTrackedAction.ReadValue<float>() > 0.5f;*/
+        bool gazeValid = true;
 
         bool hitPainting = false;
 
@@ -140,7 +141,7 @@ public class PaintingEyeTrackingRecorder : MonoBehaviour
             if (drawDebugRay)
             {
                 Debug.DrawRay(gazeOrigin, Camera.main.transform.forward * 5f, Color.green, 0.1f);
-                Debug.DrawRay(gazeOrigin, gazeDirection * 5f, Color.blue, 0.1f);
+                //Debug.DrawRay(gazeOrigin, gazeDirection * 5f, Color.blue, 0.1f);
             }
 
             Ray gazeRay =
@@ -339,6 +340,13 @@ public class PaintingEyeTrackingRecorder : MonoBehaviour
             gazeRotationAction.Disable();
             gazeRotationAction.Dispose();
             gazeRotationAction = null;
+        }
+
+        if (gazeTrackedAction != null)
+        {
+            gazeTrackedAction.Disable();
+            gazeTrackedAction.Dispose();
+            gazeTrackedAction = null;
         }
     }
 
