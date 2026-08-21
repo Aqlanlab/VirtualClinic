@@ -1,0 +1,5 @@
+RealTime,UnityTime,GazeValid,GazeOriginX,GazeOriginY,GazeOriginZ,GazeRotX,GazeRotY,GazeRotZ,GazeRotW,GazeDirX,GazeDirY,GazeDirZ,HitPainting,ImageX,ImageY,HitPointX,HitPointY,HitPointZ,HitDistance
+2026-08-21 14:42:52.244,26.04955,False,18.82265,1.142722,-8.486459,0,0,0,1,0,0,1,False,-1,-1,0,0,0,-1
+2026-08-21 14:42:52.267,26.08433,False,18.82276,1.142706,-8.486139,0,0,0,1,0,0,1,False,-1,-1,0,0,0,-1
+2026-08-21 14:42:52.311,26.12843,False,18.82283,1.142643,-8.48583,0,0,0,1,0,0,1,False,-1,-1,0,0,0,-1
+2026-08-21 14:42:52.355,26.17224,False,18.82286,1.142692,-8.485636,0,0,0,1,0,0,1,False,-1,-1,0,0,0,-1
